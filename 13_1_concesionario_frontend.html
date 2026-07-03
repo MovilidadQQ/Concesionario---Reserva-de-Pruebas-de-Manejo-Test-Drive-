@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caso 13.1 — Reserva de Test Drive</title>
+<style>
+  :root{
+    --bg:#15181c;
+    --panel:#1c2126;
+    --panel-2:#20262c;
+    --line:#2c3339;
+    --text:#eef1f3;
+    --muted:#8b95a1;
+    --amber:#e2a33d;
+    --amber-dim:#5a4526;
+    --red:#e0654f;
+    --green:#5fb984;
+    --mono:'JetBrains Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,Segoe UI,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:38px 32px 26px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#1a1e23,#15181c);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    color:var(--amber);
+    text-transform:uppercase;
+  }
+  h1{
+    margin:8px 0 6px;
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--muted);font-size:14px;max-width:640px;}
+  main{max-width:980px;margin:0 auto;padding:32px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media(max-width:800px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px;
+  }
+  .card h2{
+    font-size:15px;
+    margin:0 0 16px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    display:flex;align-items:center;gap:8px;
+  }
+  .tag{
+    font-family:var(--mono);
+    font-size:10px;
+    padding:2px 7px;
+    border-radius:4px;
+    background:var(--amber-dim);
+    color:var(--amber);
+    text-transform:none;
+    letter-spacing:0;
+  }
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  select,input{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:7px;
+    font-size:14px;
+    font-family:inherit;
+  }
+  select:focus,input:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{
+    margin-top:18px;
+    width:100%;
+    background:var(--amber);
+    color:#1a1408;
+    border:none;
+    padding:12px;
+    border-radius:7px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  button:hover{filter:brightness(1.08);}
+  .msg{
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:7px;
+    font-size:13px;
+    display:none;
+  }
+  .msg.ok{display:block;background:#173325;color:var(--green);border:1px solid #245a3d;}
+  .msg.err{display:block;background:#3a1f1a;color:var(--red);border:1px solid #6b3226;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
+  td.mono{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .empty{color:var(--muted);font-size:13px;padding:12px 0;}
+  .badge-ok{color:var(--green);font-family:var(--mono);font-size:11px;}
+  .badge-conflict{color:var(--red);font-family:var(--mono);font-size:11px;}
+
+  details{
+    margin-top:28px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  summary{
+    cursor:pointer;
+    padding:16px 22px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    list-style:none;
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:'▸ ';color:var(--amber);}
+  details[open] summary::before{content:'▾ ';}
+  .arch-body{padding:0 22px 22px;font-size:13px;color:var(--muted);}
+  .arch-body h3{color:var(--text);font-size:13px;margin:16px 0 6px;}
+  .arch-body h3 .tag{margin-right:6px;}
+  .filelist{font-family:var(--mono);font-size:12px;color:#c9d1d9;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:12px 14px;margin:10px 0;}
+  .filelist div{padding:2px 0;}
+  pre{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:12px 14px;
+    overflow-x:auto;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#c9d1d9;
+    line-height:1.6;
+  }
+  .tag.fe{background:#1e3350;color:#6ea8ff;}
+  .tag.be{background:var(--amber-dim);color:var(--amber);}
+  .tag.db{background:#33234f;color:#b48cf0;}
+  .warn{background:#3a1f1a;border:1px solid #6b3226;color:#f0a999;border-radius:7px;padding:10px 12px;font-size:12.5px;margin:10px 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Bloque 13 · Caso 13.1</div>
+  <h1>Concesionario — Reserva de Prueba de Manejo</h1>
+  <p class="sub">Agenda un test drive asignando vehículo, conductor y asesor. El sistema valida que ni el vehículo ni el asesor tengan otro compromiso cruzado en la franja horaria solicitada.</p>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card">
+      <h2>Nueva reserva <span class="tag">frontend</span></h2>
+      <label>Vehículo de demostración</label>
+      <select id="vehiculo"></select>
+
+      <label>Asesor comercial</label>
+      <select id="asesor"></select>
+
+      <label>Cliente / conductor</label>
+      <input id="cliente" type="text" placeholder="Nombre y apellido">
+
+      <label>Fecha</label>
+      <input id="fecha" type="date">
+
+      <div class="row2">
+        <div>
+          <label>Hora inicio</label>
+          <input id="horaInicio" type="time" value="10:00">
+        </div>
+        <div>
+          <label>Duración (min)</label>
+          <input id="duracion" type="number" value="30" min="15" step="15">
+        </div>
+      </div>
+
+      <button onclick="intentarReservar()">Verificar y reservar</button>
+      <div id="msg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Reservas del día <span class="tag">base de datos</span></h2>
+      <div id="tablaReservas"></div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Arquitectura de esta página — qué resuelve cada capa</summary>
+    <div class="arch-body">
+      <p>El proyecto ahora está separado en tres archivos independientes, cada uno representando una capa real:</p>
+      <div class="filelist">
+        <div>📄 <strong>13_1_concesionario_frontend.html</strong> — HTML + CSS + lógica de interfaz</div>
+        <div>⚙️ <strong>13_1_concesionario_backend.js</strong> — reglas de negocio + persistencia</div>
+        <div>🗄️ <strong>13_1_concesionario_db.json</strong> — datos semilla (seed)</div>
+      </div>
+      <div class="warn">⚠️ El navegador bloquea <code>fetch()</code> sobre archivos abiertos con doble clic (<code>file://</code>). Serví esta carpeta con un servidor local, por ejemplo <code>npx serve</code> o la extensión "Live Server" de VS Code, y abrí <code>13_1_concesionario_frontend.html</code> desde ahí.</div>
+
+      <h3><span class="tag fe">Frontend</span>Formulario + render de tabla</h3>
+      <p>Captura vehículo, asesor, cliente, fecha y franja horaria. Llama a las funciones de <code>backend.js</code> (cargado con <code>&lt;script src="13_1_concesionario_backend.js"&gt;</code>) y renderiza la grilla leyendo de <code>DB.reservas</code>.</p>
+
+      <h3><span class="tag be">Backend simulado</span>Validación de cruce de horarios</h3>
+      <p>Antes de crear la reserva, <code>verificarDisponibilidad()</code> recorre la tabla de reservas y chequea solapamiento de intervalos tanto para el <code>vehiculoId</code> como para el <code>asesorId</code> en la misma fecha. Si hay conflicto en cualquiera de los dos, rechaza la operación e informa cuál recurso está ocupado.</p>
+      <pre>function seSuperponen(iniA, finA, iniB, finB) {
+  return iniA &lt; finB && iniB &lt; finA;
+}
+
+function verificarDisponibilidad(vehiculoId, asesorId, fecha, ini, fin) {
+  const delDia = DB.reservas.filter(r => r.fecha === fecha);
+
+  const conflictoVehiculo = delDia.some(r =>
+    r.vehiculoId === vehiculoId && seSuperponen(ini, fin, r.ini, r.fin));
+
+  const conflictoAsesor = delDia.some(r =>
+    r.asesorId === asesorId && seSuperponen(ini, fin, r.ini, r.fin));
+
+  return { disponible: !conflictoVehiculo && !conflictoAsesor,
+           conflictoVehiculo, conflictoAsesor };
+}</pre>
+
+      <h3><span class="tag db">Base de datos</span><code>db.json</code> + <code>localStorage</code></h3>
+      <p><code>13_1_concesionario_db.json</code> guarda el estado inicial de tres tablas: <code>vehiculos</code>, <code>asesores</code> y <code>reservas</code>. En la primera carga, <code>backend.js</code> hace <code>fetch</code> de ese archivo (simula un <code>SELECT</code> inicial) y a partir de ahí persiste cada cambio en <code>localStorage</code> (simula el motor de base de datos guardando en disco). Cada reserva exitosa hace <code>push</code> a <code>DB.reservas</code> y se guarda, tal como haría un <code>INSERT</code> en SQL.</p>
+    </div>
+  </details>
+</main>
+
+<script src="13_1_concesionario_backend.js"></script>
+<script>
+  // ---- estado en memoria (poblado por el backend al iniciar) ----
+  let DB = null;
+
+  // ---- frontend ----
+  function poblarSelects(){
+    const vSel = document.getElementById('vehiculo');
+    const aSel = document.getElementById('asesor');
+    vSel.innerHTML = DB.vehiculos.map(v => `<option value="${v.id}">${v.nombre}</option>`).join('');
+    aSel.innerHTML = DB.asesores.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+  }
+
+  function nombreVehiculo(id){ return DB.vehiculos.find(v=>v.id==id)?.nombre || '—'; }
+  function nombreAsesor(id){ return DB.asesores.find(a=>a.id==id)?.nombre || '—'; }
+
+  function renderTabla(){
+    const fecha = document.getElementById('fecha').value;
+    const cont = document.getElementById('tablaReservas');
+    const filas = DB.reservas.filter(r => !fecha || r.fecha === fecha)
+                             .sort((a,b)=>a.ini-b.ini);
+    if(filas.length === 0){
+      cont.innerHTML = '<div class="empty">Sin reservas para la fecha seleccionada.</div>';
+      return;
+    }
+    cont.innerHTML = `
+      <table>
+        <thead><tr><th>Horario</th><th>Vehículo</th><th>Asesor</th><th>Cliente</th></tr></thead>
+        <tbody>
+          ${filas.map(r => `
+            <tr>
+              <td class="mono">${minAHHMM(r.ini)}–${minAHHMM(r.fin)}</td>
+              <td>${nombreVehiculo(r.vehiculoId)}</td>
+              <td>${nombreAsesor(r.asesorId)}</td>
+              <td>${r.cliente}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function intentarReservar(){
+    const vehiculoId = Number(document.getElementById('vehiculo').value);
+    const asesorId = Number(document.getElementById('asesor').value);
+    const cliente = document.getElementById('cliente').value.trim();
+    const fecha = document.getElementById('fecha').value;
+    const ini = hhmmAMin(document.getElementById('horaInicio').value);
+    const dur = Number(document.getElementById('duracion').value);
+    const fin = ini + dur;
+
+    const msg = document.getElementById('msg');
+
+    if(!cliente || !fecha){
+      msg.className = 'msg err';
+      msg.textContent = 'Completá cliente y fecha antes de reservar.';
+      return;
+    }
+
+    const res = crearReserva({vehiculoId, asesorId, cliente, fecha, ini, fin});
+
+    if(res.ok){
+      msg.className = 'msg ok';
+      msg.textContent = `Reserva confirmada: ${minAHHMM(ini)}–${minAHHMM(fin)} · ${nombreVehiculo(vehiculoId)} con ${nombreAsesor(asesorId)}.`;
+      document.getElementById('cliente').value = '';
+      renderTabla();
+    } else {
+      msg.className = 'msg err';
+      const motivos = [];
+      if(res.check.conflictoVehiculo) motivos.push(`el vehículo ya está reservado ${minAHHMM(res.check.conflictoVehiculo.ini)}–${minAHHMM(res.check.conflictoVehiculo.fin)}`);
+      if(res.check.conflictoAsesor) motivos.push(`el asesor ya tiene un test drive ${minAHHMM(res.check.conflictoAsesor.ini)}–${minAHHMM(res.check.conflictoAsesor.fin)}`);
+      msg.textContent = 'No se puede reservar: ' + motivos.join(' y ') + '.';
+    }
+  }
+
+  async function init(){
+    DB = await cargarDB();
+    document.getElementById('fecha').valueAsDate = new Date();
+    document.getElementById('fecha').addEventListener('change', renderTabla);
+    poblarSelects();
+    renderTabla();
+  }
+
+  init();
+</script>
+</body>
+</html>

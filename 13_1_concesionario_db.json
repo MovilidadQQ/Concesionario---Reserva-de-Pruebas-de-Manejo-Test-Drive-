@@ -1,0 +1,12 @@
+{
+  "vehiculos": [
+    { "id": 1, "nombre": "Toyota Corolla Cross" },
+    { "id": 2, "nombre": "VW Taos" },
+    { "id": 3, "nombre": "Fiat Cronos" }
+  ],
+  "asesores": [
+    { "id": 1, "nombre": "Lucas Ferreyra" },
+    { "id": 2, "nombre": "Ayelén Rojas" }
+  ],
+  "reservas": []
+}
