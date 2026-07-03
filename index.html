@@ -3,228 +3,370 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caso 13.3 — Fila Virtual de Espera</title>
+<title>Caso 13.1 — Reserva de Test Drive</title>
 <style>
   :root{
-    --bg:#0f1a1e;
-    --panel:#152428;
-    --panel-2:#1a2c31;
-    --line:#254045;
-    --text:#eaf3f4;
-    --muted:#87a2a6;
-    --cyan:#4fc7d9;
-    --cyan-dim:#173c42;
+    --bg:#15181c;
+    --panel:#1c2126;
+    --panel-2:#20262c;
+    --line:#2c3339;
+    --text:#eef1f3;
+    --muted:#8b95a1;
+    --amber:#e2a33d;
+    --amber-dim:#5a4526;
     --red:#e0654f;
     --green:#5fb984;
     --mono:'JetBrains Mono','Courier New',monospace;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,Segoe UI,sans-serif;line-height:1.5;}
-  header{padding:38px 32px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#122226,#0f1a1e);}
-  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase;}
-  h1{margin:8px 0 6px;font-size:28px;font-weight:700;letter-spacing:-.01em;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,Segoe UI,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:38px 32px 26px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#1a1e23,#15181c);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    color:var(--amber);
+    text-transform:uppercase;
+  }
+  h1{
+    margin:8px 0 6px;
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
   .sub{color:var(--muted);font-size:14px;max-width:640px;}
   main{max-width:980px;margin:0 auto;padding:32px;}
-  .grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
   @media(max-width:800px){.grid{grid-template-columns:1fr;}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;}
-  .card h2{font-size:15px;margin:0 0 16px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:8px;}
-  .tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;background:var(--cyan-dim);color:var(--cyan);text-transform:none;letter-spacing:0;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px;
+  }
+  .card h2{
+    font-size:15px;
+    margin:0 0 16px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    display:flex;align-items:center;gap:8px;
+  }
+  .tag{
+    font-family:var(--mono);
+    font-size:10px;
+    padding:2px 7px;
+    border-radius:4px;
+    background:var(--amber-dim);
+    color:var(--amber);
+    text-transform:none;
+    letter-spacing:0;
+  }
   label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
   label:first-child{margin-top:0;}
-  select,input{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:7px;font-size:14px;font-family:inherit;}
-  select:focus,input:focus{outline:2px solid var(--cyan);outline-offset:1px;}
-  button{margin-top:18px;width:100%;background:var(--cyan);color:#08191b;border:none;padding:12px;border-radius:7px;font-weight:700;font-size:14px;cursor:pointer;}
+  select,input{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:7px;
+    font-size:14px;
+    font-family:inherit;
+  }
+  select:focus,input:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{
+    margin-top:18px;
+    width:100%;
+    background:var(--amber);
+    color:#1a1408;
+    border:none;
+    padding:12px;
+    border-radius:7px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
   button:hover{filter:brightness(1.08);}
-
-  .stat{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;border-bottom:1px dashed var(--line);}
-  .stat:last-child{border-bottom:none;}
-  .stat .label{color:var(--muted);font-size:13px;}
-  .stat .value{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--cyan);}
-
+  .msg{
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:7px;
+    font-size:13px;
+    display:none;
+  }
+  .msg.ok{display:block;background:#173325;color:var(--green);border:1px solid #245a3d;}
+  .msg.err{display:block;background:#3a1f1a;color:var(--red);border:1px solid #6b3226;}
   table{width:100%;border-collapse:collapse;font-size:13px;}
   th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line);}
   th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
-  td.mono{font-family:var(--mono);font-size:12px;}
-  .pos{color:var(--cyan);font-weight:700;font-family:var(--mono);}
-  .wait{color:var(--muted);font-family:var(--mono);font-size:12px;}
+  td.mono{font-family:var(--mono);font-size:12px;color:var(--muted);}
   .empty{color:var(--muted);font-size:13px;padding:12px 0;}
-  .attendbtn{
-    background:transparent;border:1px solid var(--line);color:var(--muted);
-    padding:5px 9px;border-radius:6px;font-size:11px;cursor:pointer;width:auto;margin:0;
-  }
-  .attendbtn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .badge-ok{color:var(--green);font-family:var(--mono);font-size:11px;}
+  .badge-conflict{color:var(--red);font-family:var(--mono);font-size:11px;}
 
-  details{margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
-  summary{cursor:pointer;padding:16px 22px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;list-style:none;}
+  details{
+    margin-top:28px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  summary{
+    cursor:pointer;
+    padding:16px 22px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    list-style:none;
+  }
   summary::-webkit-details-marker{display:none;}
-  summary::before{content:'▸ ';color:var(--cyan);}
+  summary::before{content:'▸ ';color:var(--amber);}
   details[open] summary::before{content:'▾ ';}
   .arch-body{padding:0 22px 22px;font-size:13px;color:var(--muted);}
   .arch-body h3{color:var(--text);font-size:13px;margin:16px 0 6px;}
-  pre{background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12px;color:#cdeef2;line-height:1.6;}
+  .arch-body h3 .tag{margin-right:6px;}
+  pre{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:12px 14px;
+    overflow-x:auto;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#c9d1d9;
+    line-height:1.6;
+  }
   .tag.fe{background:#1e3350;color:#6ea8ff;}
-  .tag.be{background:#4a3418;color:#e2a33d;}
+  .tag.be{background:var(--amber-dim);color:var(--amber);}
   .tag.db{background:#33234f;color:#b48cf0;}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">Bloque 13 · Caso 13.3</div>
-  <h1>Lavadero de Vehículos — Fila Virtual de Espera</h1>
-  <p class="sub">Al ingresar un vehículo se calcula el tiempo estimado de espera sumando los tiempos promedio de los servicios de todos los vehículos que están delante en la cola. El valor se recalcula en tiempo real.</p>
+  <div class="eyebrow">Bloque 13 · Caso 13.1</div>
+  <h1>Concesionario — Reserva de Prueba de Manejo</h1>
+  <p class="sub">Agenda un test drive asignando vehículo, conductor y asesor. El sistema valida que ni el vehículo ni el asesor tengan otro compromiso cruzado en la franja horaria solicitada.</p>
 </header>
 
 <main>
   <div class="grid">
     <div class="card">
-      <h2>Ingresar vehículo <span class="tag">frontend</span></h2>
-      <label>Patente</label>
-      <input id="patente" type="text" placeholder="AB123CD" maxlength="8">
+      <h2>Nueva reserva <span class="tag">frontend</span></h2>
+      <label>Vehículo de demostración</label>
+      <select id="vehiculo"></select>
 
-      <label>Servicio contratado</label>
-      <select id="servicio"></select>
+      <label>Asesor comercial</label>
+      <select id="asesor"></select>
 
-      <button onclick="ingresarVehiculo()">Sumar a la cola</button>
+      <label>Cliente / conductor</label>
+      <input id="cliente" type="text" placeholder="Nombre y apellido">
 
-      <div style="margin-top:22px;">
-        <div class="stat">
-          <span class="label">Vehículos en espera</span>
-          <span class="value" id="totalEnCola">0</span>
+      <label>Fecha</label>
+      <input id="fecha" type="date">
+
+      <div class="row2">
+        <div>
+          <label>Hora inicio</label>
+          <input id="horaInicio" type="time" value="10:00">
         </div>
-        <div class="stat">
-          <span class="label">Tiempo estimado para el próximo ingreso</span>
-          <span class="value" id="proximaEspera">0 min</span>
+        <div>
+          <label>Duración (min)</label>
+          <input id="duracion" type="number" value="30" min="15" step="15">
         </div>
       </div>
+
+      <button onclick="intentarReservar()">Verificar y reservar</button>
+      <div id="msg" class="msg"></div>
     </div>
 
     <div class="card">
-      <h2>Cola actual <span class="tag">base de datos</span></h2>
-      <div id="tablaCola"></div>
+      <h2>Reservas del día <span class="tag">base de datos</span></h2>
+      <div id="tablaReservas"></div>
     </div>
   </div>
 
   <details>
     <summary>Arquitectura de esta página — qué resuelve cada capa</summary>
     <div class="arch-body">
-      <p>Todo corre en el navegador: el "servidor" es un conjunto de funciones JS y la "base de datos" es un objeto en memoria persistido en <code>localStorage</code>.</p>
+      <p>Al ser un único archivo HTML/CSS/JS sin servidor real, el <strong>backend</strong> y la <strong>base de datos</strong> se simulan en JavaScript dentro del mismo documento: funciones puras hacen de "endpoints" y un objeto <code>DB</code> persistido en <code>localStorage</code> hace de tablas.</p>
 
-      <h3><span class="tag fe">Frontend</span>Alta de vehículo + panel en vivo</h3>
-      <p>El formulario toma patente y tipo de servicio. El panel de la derecha se vuelve a renderizar cada vez que cambia la cola, mostrando la posición y el tiempo estimado de cada vehículo.</p>
+      <h3><span class="tag fe">Frontend</span>Formulario + render de tabla</h3>
+      <p>Captura vehículo, asesor, cliente, fecha y franja horaria. Renderiza la grilla de reservas del día leyendo directamente de <code>DB.reservas</code>.</p>
 
-      <h3><span class="tag be">Backend simulado</span>Algoritmo de tiempo de espera</h3>
-      <p><code>calcularTiempoEspera()</code> suma el tiempo promedio del tipo de servicio de cada vehículo que está delante en la cola. No es un valor fijo: si el auto de adelante tiene "Encerado" (más lento), el que ingresa después ve una espera mayor que si tuviera "Lavado Exterior". Al atender o retirar un vehículo, se recalculan todas las posiciones siguientes.</p>
-      <pre>function tiempoPromedio(tipoServicio) {
-  return DB.servicios.find(s => s.tipo === tipoServicio).minutos;
+      <h3><span class="tag be">Backend simulado</span>Validación de cruce de horarios</h3>
+      <p>Antes de crear la reserva, <code>verificarDisponibilidad()</code> recorre la tabla de reservas y chequea solapamiento de intervalos tanto para el <code>vehiculoId</code> como para el <code>asesorId</code> en la misma fecha. Si hay conflicto en cualquiera de los dos, rechaza la operación e informa cuál recurso está ocupado.</p>
+      <pre>function seSuperponen(iniA, finA, iniB, finB) {
+  return iniA &lt; finB && iniB &lt; finA;
 }
 
-function calcularTiempoEspera(posicion) {
-  // suma el tiempo de todos los vehículos delante de esta posición
-  return DB.cola
-    .slice(0, posicion)
-    .reduce((total, v) => total + tiempoPromedio(v.servicio), 0);
-}
+function verificarDisponibilidad(vehiculoId, asesorId, fecha, ini, fin) {
+  const delDia = DB.reservas.filter(r => r.fecha === fecha);
 
-function agregarVehiculo(patente, servicio) {
-  DB.cola.push({ id: Date.now(), patente, servicio, ingreso: Date.now() });
-  guardarDB();
-}
+  const conflictoVehiculo = delDia.some(r =>
+    r.vehiculoId === vehiculoId && seSuperponen(ini, fin, r.ini, r.fin));
 
-function atenderSiguiente() {
-  DB.cola.shift();      // el vehículo atendido sale de la cola
-  guardarDB();          // el resto recalcula posición automáticamente al renderizar
+  const conflictoAsesor = delDia.some(r =>
+    r.asesorId === asesorId && seSuperponen(ini, fin, r.ini, r.fin));
+
+  return { disponible: !conflictoVehiculo && !conflictoAsesor,
+           conflictoVehiculo, conflictoAsesor };
 }</pre>
 
-      <h3><span class="tag db">Base de datos simulada</span>Tablas <code>servicios</code> y <code>cola</code></h3>
-      <p><code>servicios</code> guarda el tiempo promedio por tipo (catálogo fijo). <code>cola</code> es un array ordenado que funciona como una tabla con orden de llegada implícito — la posición de un registro en el array define su lugar en la fila, igual que un <code>ORDER BY fecha_ingreso</code> haría en SQL.</p>
+      <h3><span class="tag db">Base de datos simulada</span>Tablas en <code>localStorage</code></h3>
+      <p>Tres tablas: <code>vehiculos</code>, <code>asesores</code> y <code>reservas</code> (con <code>vehiculoId</code>, <code>asesorId</code>, <code>cliente</code>, <code>fecha</code>, <code>ini</code>, <code>fin</code> en minutos). Cada reserva exitosa hace <code>push</code> a <code>DB.reservas</code> y persiste con <code>localStorage.setItem</code>, tal como haría un INSERT en SQL.</p>
     </div>
   </details>
 </main>
 
 <script>
-  const STORAGE_KEY = 'bloque13_lavadero_db';
+  const STORAGE_KEY = 'bloque13_concesionario_db';
 
   function dbInicial(){
     return {
-      servicios: [
-        {tipo:'Lavado Exterior', minutos:15},
-        {tipo:'Lavado Completo', minutos:30},
-        {tipo:'Encerado', minutos:45},
+      vehiculos: [
+        {id:1, nombre:'Toyota Corolla Cross'},
+        {id:2, nombre:'VW Taos'},
+        {id:3, nombre:'Fiat Cronos'},
       ],
-      cola: []
+      asesores: [
+        {id:1, nombre:'Lucas Ferreyra'},
+        {id:2, nombre:'Ayelén Rojas'},
+      ],
+      reservas: []
     };
   }
-  function cargarDB(){ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : dbInicial(); }
-  function guardarDB(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
+
+  function cargarDB(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : dbInicial();
+  }
+  function guardarDB(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  }
 
   let DB = cargarDB();
 
-  // ---- "backend" ----
-  function tiempoPromedio(tipoServicio){
-    return DB.servicios.find(s => s.tipo === tipoServicio).minutos;
+  function hhmmAMin(hhmm){
+    const [h,m] = hhmm.split(':').map(Number);
+    return h*60+m;
   }
-  function calcularTiempoEspera(posicion){
-    return DB.cola.slice(0, posicion).reduce((total, v) => total + tiempoPromedio(v.servicio), 0);
+  function minAHHMM(min){
+    const h = String(Math.floor(min/60)).padStart(2,'0');
+    const m = String(min%60).padStart(2,'0');
+    return `${h}:${m}`;
   }
-  function agregarVehiculo(patente, servicio){
-    DB.cola.push({ id: Date.now(), patente: patente.toUpperCase(), servicio, ingreso: Date.now() });
+
+  function seSuperponen(iniA, finA, iniB, finB){
+    return iniA < finB && iniB < finA;
+  }
+
+  // ---- "backend": lógica de negocio ----
+  function verificarDisponibilidad(vehiculoId, asesorId, fecha, ini, fin){
+    const delDia = DB.reservas.filter(r => r.fecha === fecha);
+    const conflictoVehiculo = delDia.find(r => r.vehiculoId === vehiculoId && seSuperponen(ini, fin, r.ini, r.fin));
+    const conflictoAsesor = delDia.find(r => r.asesorId === asesorId && seSuperponen(ini, fin, r.ini, r.fin));
+    return { disponible: !conflictoVehiculo && !conflictoAsesor, conflictoVehiculo, conflictoAsesor };
+  }
+
+  function crearReserva({vehiculoId, asesorId, cliente, fecha, ini, fin}){
+    const check = verificarDisponibilidad(vehiculoId, asesorId, fecha, ini, fin);
+    if(!check.disponible){
+      return { ok:false, check };
+    }
+    const nueva = { id: Date.now(), vehiculoId, asesorId, cliente, fecha, ini, fin };
+    DB.reservas.push(nueva);
     guardarDB();
-  }
-  function atenderSiguiente(){
-    DB.cola.shift();
-    guardarDB();
+    return { ok:true, reserva:nueva };
   }
 
   // ---- frontend ----
-  function poblarServicios(){
-    document.getElementById('servicio').innerHTML =
-      DB.servicios.map(s => `<option value="${s.tipo}">${s.tipo} (~${s.minutos} min)</option>`).join('');
+  function poblarSelects(){
+    const vSel = document.getElementById('vehiculo');
+    const aSel = document.getElementById('asesor');
+    vSel.innerHTML = DB.vehiculos.map(v => `<option value="${v.id}">${v.nombre}</option>`).join('');
+    aSel.innerHTML = DB.asesores.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
   }
 
-  function render(){
-    const cont = document.getElementById('tablaCola');
-    document.getElementById('totalEnCola').textContent = DB.cola.length;
-    document.getElementById('proximaEspera').textContent = calcularTiempoEspera(DB.cola.length) + ' min';
+  function nombreVehiculo(id){ return DB.vehiculos.find(v=>v.id==id)?.nombre || '—'; }
+  function nombreAsesor(id){ return DB.asesores.find(a=>a.id==id)?.nombre || '—'; }
 
-    if(DB.cola.length === 0){
-      cont.innerHTML = '<div class="empty">No hay vehículos en espera.</div>';
+  function renderTabla(){
+    const fecha = document.getElementById('fecha').value;
+    const cont = document.getElementById('tablaReservas');
+    const filas = DB.reservas.filter(r => !fecha || r.fecha === fecha)
+                             .sort((a,b)=>a.ini-b.ini);
+    if(filas.length === 0){
+      cont.innerHTML = '<div class="empty">Sin reservas para la fecha seleccionada.</div>';
       return;
     }
-
     cont.innerHTML = `
       <table>
-        <thead><tr><th>#</th><th>Patente</th><th>Servicio</th><th>Espera est.</th><th></th></tr></thead>
+        <thead><tr><th>Horario</th><th>Vehículo</th><th>Asesor</th><th>Cliente</th></tr></thead>
         <tbody>
-          ${DB.cola.map((v,i) => `
+          ${filas.map(r => `
             <tr>
-              <td class="pos">${i+1}</td>
-              <td class="mono">${v.patente}</td>
-              <td>${v.servicio}</td>
-              <td class="wait">${calcularTiempoEspera(i)} min</td>
-              <td>${i===0 ? `<button class="attendbtn" onclick="atender()">Atender</button>` : ''}</td>
+              <td class="mono">${minAHHMM(r.ini)}–${minAHHMM(r.fin)}</td>
+              <td>${nombreVehiculo(r.vehiculoId)}</td>
+              <td>${nombreAsesor(r.asesorId)}</td>
+              <td>${r.cliente}</td>
             </tr>`).join('')}
         </tbody>
       </table>`;
   }
 
-  function ingresarVehiculo(){
-    const patente = document.getElementById('patente').value.trim();
-    const servicio = document.getElementById('servicio').value;
-    if(!patente) return;
-    agregarVehiculo(patente, servicio);
-    document.getElementById('patente').value = '';
-    render();
+  function intentarReservar(){
+    const vehiculoId = Number(document.getElementById('vehiculo').value);
+    const asesorId = Number(document.getElementById('asesor').value);
+    const cliente = document.getElementById('cliente').value.trim();
+    const fecha = document.getElementById('fecha').value;
+    const ini = hhmmAMin(document.getElementById('horaInicio').value);
+    const dur = Number(document.getElementById('duracion').value);
+    const fin = ini + dur;
+
+    const msg = document.getElementById('msg');
+
+    if(!cliente || !fecha){
+      msg.className = 'msg err';
+      msg.textContent = 'Completá cliente y fecha antes de reservar.';
+      return;
+    }
+
+    const res = crearReserva({vehiculoId, asesorId, cliente, fecha, ini, fin});
+
+    if(res.ok){
+      msg.className = 'msg ok';
+      msg.textContent = `Reserva confirmada: ${minAHHMM(ini)}–${minAHHMM(fin)} · ${nombreVehiculo(vehiculoId)} con ${nombreAsesor(asesorId)}.`;
+      document.getElementById('cliente').value = '';
+      renderTabla();
+    } else {
+      msg.className = 'msg err';
+      const motivos = [];
+      if(res.check.conflictoVehiculo) motivos.push(`el vehículo ya está reservado ${minAHHMM(res.check.conflictoVehiculo.ini)}–${minAHHMM(res.check.conflictoVehiculo.fin)}`);
+      if(res.check.conflictoAsesor) motivos.push(`el asesor ya tiene un test drive ${minAHHMM(res.check.conflictoAsesor.ini)}–${minAHHMM(res.check.conflictoAsesor.fin)}`);
+      msg.textContent = 'No se puede reservar: ' + motivos.join(' y ') + '.';
+    }
   }
 
-  function atender(){
-    atenderSiguiente();
-    render();
-  }
+  document.getElementById('fecha').valueAsDate = new Date();
+  document.getElementById('fecha').addEventListener('change', renderTabla);
 
-  poblarServicios();
-  render();
+  poblarSelects();
+  renderTabla();
 </script>
 </body>
 </html>
